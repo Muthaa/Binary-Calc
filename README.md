@@ -1,4 +1,4 @@
-# Binary Calc
+# Binary Calculator with Floating-Point & Scientific Functions
 
 ## 📌 Introduction
 This is a feature-rich **Binary Calculator** that supports:
@@ -9,6 +9,7 @@ This is a feature-rich **Binary Calculator** that supports:
 - Octal & Hexadecimal conversions
 - Calculation history tracking
 - Memory function to store results
+- **Automated tests for reliability**
 
 ## 🚀 Features
 ✅ **Binary & Decimal Support** – Perform calculations in both formats  
@@ -18,6 +19,7 @@ This is a feature-rich **Binary Calculator** that supports:
 ✅ **History Log** – Stores last 10 calculations for reference  
 ✅ **Memory Function** – Reuse last result in new calculations  
 ✅ **Better Error Handling** – Handles invalid input and edge cases gracefully  
+✅ **Unit Tests** – Ensures correctness of all operations  
 
 ## 📖 Usage Guide
 1. Run the script in Python.
@@ -76,7 +78,8 @@ Output: 2.322 (Decimal Approx.)
 ```
 
 ## 🔄 Changelog
-### **v2.0 – Latest Version**
+### **v2.1 – Latest Version**
+- ✅ **Added unit tests for all operations**
 - ✅ **Improved binary conversion accuracy**
 - ✅ **Better error handling** (e.g., factorial for non-integers)
 - ✅ **Supports floating-point binary operations correctly**
@@ -85,8 +88,18 @@ Output: 2.322 (Decimal Approx.)
 - ✅ **Memory function for storing last results**
 - ✅ **Scientific calculator features added**
 
+### **v2.0**
+- Major feature expansion with scientific functions and better bitwise operations.
+
 ### **v1.0**
-- Initial release with basic binary arithmetic
+- Initial release with basic binary arithmetic.
+
+## 🔬 Running Tests
+To ensure the correctness of all operations, run the **unit tests**:
+```sh
+python -m unittest test_binary_calculator.py
+```
+This will execute a series of **automated tests** to validate binary calculations, bitwise operations, and scientific functions.
 
 ## ⚡ Improvements
 - **Enhanced floating-point binary calculations** for better precision.
@@ -101,6 +114,3 @@ Output: 2.322 (Decimal Approx.)
 ## 🎯 Future Enhancements
 - Support for **binary fractions in bitwise operations**
 - GUI version for better user experience
-
-Enjoy using the **Binary Calculator**! 🚀
-

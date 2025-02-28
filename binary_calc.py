@@ -1,173 +1,76 @@
 import math
-import re
 
 class BinaryCalculator:
-    def __init__(self):
-        """Initialize memory for storing the last result and history log."""
-        self.memory = None
-        self.history = []
+    def binary_to_decimal(self, binary_str):
+        return int(binary_str, 2)
 
-    def is_valid_binary(self, binary):
-        """Check if a string is a valid binary number (supports floating points and negatives)."""
-        return bool(re.fullmatch(r"-?[01]+(\.[01]+)?", binary))
+    def decimal_to_binary(self, decimal_num):
+        return bin(decimal_num)[2:]
 
-    def decimal_to_binary(self, num):
-        """Convert decimal to binary (supports floating points)."""
-        if isinstance(num, int):  # Integer case
-            return bin(num)[2:] if num >= 0 else "-" + bin(abs(num))[2:]
+    def is_valid_binary(self, binary_str):
+        return all(digit in '01' for digit in binary_str)
 
-        # Floating-point case
-        integer_part = int(num)
-        fractional_part = abs(num - integer_part)
-        binary_integer = bin(abs(integer_part))[2:]
+    def bitwise_operations(self, num1, num2, operator):
+        result = {
+            "&": num1 & num2,
+            "|": num1 | num2,
+            "^": num1 ^ num2,
+            "%": num1 % num2,
+            "**": num1 ** num2
+        }.get(operator, None)
+        
+        if result is not None:
+            max_length = max(len(bin(num1)[2:]), len(bin(num2)[2:]))
+            return format(result, f'0{max_length}b')  # Ensure fixed-width binary output
 
-        # Convert fractional part
-        binary_fraction = ""
-        max_precision = 15  # Set precision limit
-        while fractional_part and len(binary_fraction) < max_precision:
-            fractional_part *= 2
-            bit = int(fractional_part)
-            binary_fraction += str(bit)
-            fractional_part -= bit
-
-        binary_result = binary_integer + ("." + binary_fraction if binary_fraction else "")
-        return binary_result if num >= 0 else "-" + binary_result
-
-    def binary_to_decimal(self, binary):
-        """Convert binary to decimal (supports floating points)."""
-        if not self.is_valid_binary(binary):
-            raise ValueError("Invalid binary number format.")
-
-        negative = binary.startswith("-")
-        if negative:
-            binary = binary[1:]
-
-        if "." in binary:
-            integer_part, fractional_part = binary.split(".")
-            decimal_integer = int(integer_part, 2)
-            decimal_fraction = sum(int(bit) * (1 / (2 ** (i + 1))) for i, bit in enumerate(fractional_part))
-            result = decimal_integer + decimal_fraction
-        else:
-            result = int(binary, 2)
-
-        return -result if negative else result
-
-    def add_to_history(self, operation, result):
-        """Store operation and result in history."""
-        self.history.append(f"{operation} = {result}")
-        if len(self.history) > 10:
-            self.history.pop(0)
-
-    def show_history(self):
-        """Display previous calculations."""
-        print("\nCalculation History:")
-        if not self.history:
-            print("No previous calculations.")
-        else:
-            for i, entry in enumerate(self.history, 1):
-                print(f"{i}. {entry}")
-
-    def scientific_operations(self, operation, num):
-        """Perform scientific functions including exponentiation, factorial, and hyperbolic functions."""
-        functions = {
-            "sin": math.sin,
-            "cos": math.cos,
-            "tan": math.tan,
-            "log": math.log,
-            "sqrt": math.sqrt,
-            "exp": math.exp,
-            "sinh": math.sinh,
-            "cosh": math.cosh,
-            "tanh": math.tanh
-        }
-
-        if operation in functions:
-            if operation == "log" and num <= 0:
-                raise ValueError("Logarithm is undefined for non-positive numbers.")
-            if operation == "sqrt" and num < 0:
-                raise ValueError("Square root of a negative number is not supported.")
-            return functions[operation](num)
-        elif operation == "fact":
-            if num < 0 or not num.is_integer():
-                raise ValueError("Factorial is only defined for non-negative integers.")
-            return math.factorial(int(num))
-        else:
-            raise ValueError("Unsupported scientific operation.")
-
-    def binary_calculator(self):
-        print("Binary Calculator with Floating-Point Arithmetic & Scientific Operations")
-        print("Operations: +, -, *, /, &, |, ^, ~, <<, >>, sin, cos, tan, log, sqrt, exp, sinh, cosh, tanh, fact, HIST")
-
-        bin1 = input("Enter first binary number (or 'M' for memory, 'HIST' for history): ").strip().upper()
-
-        if bin1 == "HIST":
-            self.show_history()
-            return
-
-        if bin1 == "M":
-            if self.memory is None:
-                print("Error: No previous result stored in memory.")
-                return
-            num1 = self.memory
-        else:
+    def calculate(self, *args):
+        if len(args) == 1:  # Handle unary operations like NOT (~)
+            bin1 = args[0][1:]  # Remove '~'
             if not self.is_valid_binary(bin1):
-                print("Error: Invalid binary number format.")
-                return
+                raise ValueError("Invalid binary number format.")
             num1 = self.binary_to_decimal(bin1)
+            result = ~num1 & ((1 << len(bin1)) - 1)  # Mask to ensure same bit length
+            return self.decimal_to_binary(result).zfill(len(bin1))  # Ensure correct padding
 
-        operator = input("Enter operation (+, -, *, /, &, |, ^, ~, <<, >>, sin, cos, tan, log, sqrt, exp, sinh, cosh, tanh, fact): ").strip()
+        elif len(args) == 2:
+            bin1, operation = args
+            if not self.is_valid_binary(bin1):
+                raise ValueError("Invalid binary number format.")
+            num = self.binary_to_decimal(bin1)
+            
+            if operation == "fact":
+                if num < 0:
+                    raise ValueError("Factorial is not defined for negative numbers.")
+                return math.factorial(int(num))
+            
+            elif operation == "log":
+                if num <= 0:
+                    raise ValueError("Logarithm is undefined for non-positive numbers.")
+                return round(math.log2(num), 3)  # Ensure decimal rounding
+            
+            elif operation == "sin":
+                return round(math.sin(math.radians(num)), 3)
+            
+            elif operation == "cos":
+                return round(math.cos(math.radians(num)), 3)
+            
+            elif operation == "tan":
+                return round(math.tan(math.radians(num)), 3)
+        
+        elif len(args) == 3:
+            bin1, operator, bin2 = args
+            if operator in ["&", "|", "^", "%", "**"]:
+                if not self.is_valid_binary(bin1) or not self.is_valid_binary(bin2):
+                    raise ValueError("Invalid binary number format.")
+                num1, num2 = self.binary_to_decimal(bin1), self.binary_to_decimal(bin2)
+                return self.bitwise_operations(num1, num2, operator)
+            
+            elif operator in ["<<", ">>"]:
+                if not self.is_valid_binary(bin1) or not bin2.isdigit():
+                    raise ValueError("Invalid binary number format.")
+                num1 = self.binary_to_decimal(bin1)
+                shift = int(bin2)  # Convert shift amount from string to integer
+                result = num1 << shift if operator == "<<" else num1 >> shift
+                return self.decimal_to_binary(result)
 
-        if operator in {"+", "-", "*", "/", "&", "|", "^", "<<", ">>"}:
-            bin2 = input("Enter second binary number: ").strip()
-            if not self.is_valid_binary(bin2):
-                print("Error: Invalid binary number format.")
-                return
-            num2 = self.binary_to_decimal(bin2)
-        else:
-            num2 = None
-
-        try:
-            if operator == '+':
-                result = num1 + num2
-            elif operator == '-':
-                result = num1 - num2
-            elif operator == '*':
-                result = num1 * num2
-            elif operator == '/':
-                if num2 == 0:
-                    print("Error: Division by zero is not allowed.")
-                    return
-                result = num1 / num2
-            elif operator == '&':
-                result = int(num1) & int(num2)
-            elif operator == '|':
-                result = int(num1) | int(num2)
-            elif operator == '^':
-                result = int(num1) ^ int(num2)
-            elif operator == '~':
-                result = ~int(num1)
-            elif operator == "<<":
-                result = int(num1) << int(num2)
-            elif operator == ">>":
-                result = int(num1) >> int(num2)
-            elif operator in {"sin", "cos", "tan", "log", "sqrt", "exp", "sinh", "cosh", "tanh", "fact"}:
-                result = self.scientific_operations(operator, num1)
-                print(f"Scientific Result: {result}")
-                self.add_to_history(f"{operator}({bin1})", result)
-                return
-            else:
-                print("Error: Unsupported operation.")
-                return
-
-            binary_result = self.decimal_to_binary(result)
-            print(f"Result in Binary: {binary_result}")
-
-            self.memory = result
-            self.add_to_history(f"{bin1} {operator} {bin2}", binary_result)
-
-        except ValueError as e:
-            print(f"Error: {e}")
-
-# Run the binary calculator
-calculator = BinaryCalculator()
-calculator.binary_calculator()
+        raise ValueError("Invalid operation or input format.")
